@@ -83,7 +83,7 @@ export function getPublicAppUrl(request?: NextRequest | Request): string {
   // 4. Default fallback for production vs local
   if (isProduction()) {
     // Canonical production fallback for this Railway deployment
-    return 'https://ai-job-outreach-agent-production.up.railway.app';
+    return 'https://auto-sending-mail-production.up.railway.app';
   }
 
   const localPort = process.env.PORT || '3000';

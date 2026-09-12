@@ -114,10 +114,11 @@ function startSupervisor(options = {}) {
   const webEnv = {
     ...process.env,
     PORT: String(port),
+    HOSTNAME: '0.0.0.0',
     DATA_DIR: dataDir,
   };
 
-  webChild = spawn(process.execPath, [nextBin, 'start', '-p', String(port)], {
+  webChild = spawn(process.execPath, [nextBin, 'start', '-H', '0.0.0.0', '-p', String(port)], {
     env: webEnv,
     stdio: options.silent ? 'pipe' : 'inherit',
   });
