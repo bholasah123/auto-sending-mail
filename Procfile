@@ -1,1 +1,1 @@
-﻿web: npm run start:railway
+web: npm run start:railway
