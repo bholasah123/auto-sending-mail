@@ -451,15 +451,11 @@ export async function sendTestEmail(recipient: string): Promise<SendResult> {
     };
   }
 
-  let resumeAttachment;
+  let resumeAttachment: { filename: string; content: Buffer; version: string } | null = null;
   try {
     resumeAttachment = getActiveResumeAttachment();
   } catch (resumeErr) {
-    return {
-      success: false,
-      error: resumeErr instanceof Error ? resumeErr.message : 'Resume attachment unavailable for test send.',
-      errorCategory: 'validation',
-    };
+    console.warn('[Test Email] No active resume uploaded yet. Proceeding with test email without attachment:', resumeErr);
   }
 
   const senderEmail = gmailClient.email !== 'me' && gmailClient.email ? gmailClient.email : 'me';
@@ -467,13 +463,13 @@ export async function sendTestEmail(recipient: string): Promise<SendResult> {
   const subject = 'AI Job Outreach Agent — Gmail Integration Test';
   const bodyText = `Hello,
 
-This is a test email sent by your AI Job Outreach Agent to verify Gmail OAuth connectivity and resume attachment functionality.
+This is a test email sent by your AI Job Outreach Agent to verify Gmail OAuth connectivity and message delivery.
 
 Details:
 • Sender Account: ${senderEmail}
 • Recipient: ${recipient}
 • Timestamp: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} (IST)
-• Attached Resume: ${resumeAttachment.filename} (Version: ${resumeAttachment.version})
+• Attached Resume: ${resumeAttachment ? `${resumeAttachment.filename} (Version: ${resumeAttachment.version})` : 'None (upload your resume in the Upload section to attach to outreach emails)'}
 
 Note:
 This message is an administrative test. It is not recorded in outreach history and does not consume your daily sending quota.
@@ -486,11 +482,15 @@ AI Job Outreach Agent`;
     to: recipient,
     subject,
     bodyText,
-    attachment: {
-      filename: resumeAttachment.filename,
-      contentType: 'application/pdf',
-      content: resumeAttachment.content,
-    },
+    ...(resumeAttachment
+      ? {
+          attachment: {
+            filename: resumeAttachment.filename,
+            contentType: 'application/pdf',
+            content: resumeAttachment.content,
+          },
+        }
+      : {}),
   });
 
   try {

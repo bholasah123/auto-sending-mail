@@ -845,12 +845,12 @@ export default function SettingsPage() {
     setIsSendingTest(true);
     setTestResult(null);
     try {
-      const res = await fetch('/api/gmail/test', {
+      const res = await fetch('/api/gmail/test-send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recipient: testRecipient }),
       });
-      const json = await res.json();
+      const json = await res.json().catch(() => ({ success: false, error: `HTTP ${res.status}: ${res.statusText}` }));
       setTestResult({
         success: json.success,
         message: json.success
@@ -858,10 +858,10 @@ export default function SettingsPage() {
           : json.error || 'Failed to send test email',
         messageId: json.data?.messageId,
       });
-    } catch {
+    } catch (err: unknown) {
       setTestResult({
         success: false,
-        message: 'Network error sending test email.',
+        message: err instanceof Error ? err.message : 'Network error sending test email.',
       });
     } finally {
       setIsSendingTest(false);
